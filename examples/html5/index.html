@@ -5,7 +5,7 @@
     <div id="qr-reader" style="width:500px"></div>
     <div id="qr-reader-results"></div>
 </body>
-<script src="/html5-qrcode.min.js"></script>
+<script src="../../minified/html5-qrcode.min.js"></script>
 <script>
     function docReady(fn) {
         // see if DOM is already available
@@ -27,6 +27,8 @@
                 lastResult = decodedText;
                 // Handle on success condition with the decoded message.
                 console.log(`Scan result ${decodedText}`, decodedResult);
+                // Show result in UI
+                resultContainer.innerHTML = `<div>Scan #${countResults}: ${decodedText}</div>`;
             }
         }
 
