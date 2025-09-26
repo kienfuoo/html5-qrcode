@@ -1,41 +1,134 @@
 <html>
 <head>
     <title>Html-Qrcode Demo</title>
-<body>
-    <div id="qr-reader" style="width:500px"></div>
-    <div id="qr-reader-results"></div>
-</body>
-<script src="./html5-qrcode.min.js"></script>
-<script>
-    function docReady(fn) {
-        // see if DOM is already available
-        if (document.readyState === "complete"
-            || document.readyState === "interactive") {
-            // call on next available tick
-            setTimeout(fn, 1);
-        } else {
-            document.addEventListener("DOMContentLoaded", fn);
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f8fb;
         }
-    }
-
-    docReady(function () {
-        var resultContainer = document.getElementById('qr-reader-results');
-        var lastResult, countResults = 0;
-        function onScanSuccess(decodedText, decodedResult) {
-            if (decodedText !== lastResult) {
-                ++countResults;
-                lastResult = decodedText;
-                // Handle on success condition with the decoded message.
-                console.log(`Scan result ${decodedText}`, decodedResult);
-                // Show result in UI
-                resultContainer.innerHTML = `<div>Scan #${countResults}: ${decodedText}</div>`;
+        #qr-reader {
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1 / 1;
+            margin: 40px auto 20px auto;
+            box-sizing: border-box;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(79,140,255,0.10);
+            overflow: hidden;
+            position: relative;
+        }
+        #qr-reader-results {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 40px auto;
+            padding: 18px 16px;
+            background: linear-gradient(90deg, #e3f0ff 0%, #f0fcff 100%);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(79,140,255,0.07);
+            text-align: center;
+            font-size: 1.15em;
+            color: #2d4f7c;
+            font-weight: 500;
+            letter-spacing: 0.03em;
+        }
+        #qr-reader-results .result-label {
+            font-size: 1em;
+            color: #4f8cff;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+        #qr-reader-results .result-value {
+            font-size: 1.2em;
+            color: #1a2a3a;
+            word-break: break-all;
+            background: #fff;
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-top: 6px;
+            box-shadow: 0 1px 4px rgba(79,140,255,0.05);
+            display: inline-block;
+        }
+        .html5-qrcode-button,
+        #html5-qrcode-button-camera-permission,
+        #html5-qrcode-button-camera-stop,
+        #html5-qrcode-button-camera-start {
+            font-size: 1.3em !important;
+            padding: 18px 40px !important;
+            border-radius: 12px !important;
+            background: linear-gradient(90deg, #4f8cff 0%, #38c7ff 100%) !important;
+            color: #fff !important;
+            border: none !important;
+            box-shadow: 0 2px 8px rgba(79,140,255,0.15) !important;
+            cursor: pointer !important;
+            margin: 18px auto !important;
+            display: block !important;
+            transition: background 0.2s;
+        }
+        .html5-qrcode-button:hover,
+        #html5-qrcode-button-camera-permission:hover,
+        #html5-qrcode-button-camera-stop:hover,
+        #html5-qrcode-button-camera-start:hover {
+            background: linear-gradient(90deg, #38c7ff 0%, #4f8cff 100%) !important;
+        }
+        @media (max-width: 600px) {
+            #qr-reader, #qr-reader-results {
+                max-width: 98vw;
+                margin-left: 1vw;
+                margin-right: 1vw;
+            }
+            #qr-reader {
+                aspect-ratio: 1 / 1;
+            }
+            .html5-qrcode-button,
+            #html5-qrcode-button-camera-permission,
+            #html5-qrcode-button-camera-stop,
+            #html5-qrcode-button-camera-start {
+                font-size: 1.1em !important;
+                padding: 14px 20px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="qr-reader"></div>
+    <div id="qr-reader-results">
+        <span class="result-label">Scan a QR code to see the result here</span>
+    </div>
+    <script src="./html5-qrcode.min.js"></script>
+    <script>
+        function docReady(fn) {
+            if (document.readyState === "complete"
+                || document.readyState === "interactive") {
+                setTimeout(fn, 1);
+            } else {
+                document.addEventListener("DOMContentLoaded", fn);
             }
         }
 
-        var html5QrcodeScanner = new Html5QrcodeScanner(
-            "qr-reader", { fps: 10, qrbox: 250 });
-        html5QrcodeScanner.render(onScanSuccess);
-    });
-</script>
-</head>
+        docReady(function () {
+            var resultContainer = document.getElementById('qr-reader-results');
+            var lastResult, countResults = 0;
+            function onScanSuccess(decodedText, decodedResult) {
+                if (decodedText !== lastResult) {
+                    ++countResults;
+                    lastResult = decodedText;
+                    console.log(`Scan result ${decodedText}`, decodedResult);
+                    resultContainer.innerHTML = `
+                        <span class="result-label">Scan #${countResults} Result:</span>
+                        <span class="result-value">${decodedText}</span>
+                    `;
+                }
+            }
+
+            var html5QrcodeScanner = new Html5QrcodeScanner(
+                "qr-reader", { fps: 10, qrbox: 250 });
+            html5QrcodeScanner.render(onScanSuccess);
+        });
+    </script>
+</body>
 </html>
