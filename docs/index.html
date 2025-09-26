@@ -13,13 +13,46 @@
             width: 100%;
             max-width: 500px;
             aspect-ratio: 1 / 1;
-            margin: 40px auto 20px auto;
+            margin: 40px auto 16px auto;
             box-sizing: border-box;
             background: #fff;
             border-radius: 16px;
             box-shadow: 0 4px 24px rgba(79,140,255,0.10);
             overflow: hidden;
             position: relative;
+        }
+        #qr-reader-controls {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 24px auto;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .html5-qrcode-button,
+        #html5-qrcode-button-camera-permission,
+        #html5-qrcode-button-camera-stop,
+        #html5-qrcode-button-camera-start {
+            font-size: 1em !important;
+            padding: 10px 24px !important;
+            border-radius: 10px !important;
+            background: linear-gradient(90deg, #4f8cff 0%, #38c7ff 100%) !important;
+            color: #fff !important;
+            border: none !important;
+            box-shadow: 0 2px 8px rgba(79,140,255,0.10) !important;
+            cursor: pointer !important;
+            margin: 0 !important;
+            display: inline-block !important;
+            transition: background 0.2s;
+            font-weight: 500 !important;
+        }
+        .html5-qrcode-button:hover,
+        #html5-qrcode-button-camera-permission:hover,
+        #html5-qrcode-button-camera-stop:hover,
+        #html5-qrcode-button-camera-start:hover {
+            background: linear-gradient(90deg, #38c7ff 0%, #4f8cff 100%) !important;
         }
         #qr-reader-results {
             width: 100%;
@@ -53,49 +86,28 @@
             box-shadow: 0 1px 4px rgba(79,140,255,0.05);
             display: inline-block;
         }
-        .html5-qrcode-button,
-        #html5-qrcode-button-camera-permission,
-        #html5-qrcode-button-camera-stop,
-        #html5-qrcode-button-camera-start {
-            font-size: 1.3em !important;
-            padding: 18px 40px !important;
-            border-radius: 12px !important;
-            background: linear-gradient(90deg, #4f8cff 0%, #38c7ff 100%) !important;
-            color: #fff !important;
-            border: none !important;
-            box-shadow: 0 2px 8px rgba(79,140,255,0.15) !important;
-            cursor: pointer !important;
-            margin: 18px auto !important;
-            display: block !important;
-            transition: background 0.2s;
-        }
-        .html5-qrcode-button:hover,
-        #html5-qrcode-button-camera-permission:hover,
-        #html5-qrcode-button-camera-stop:hover,
-        #html5-qrcode-button-camera-start:hover {
-            background: linear-gradient(90deg, #38c7ff 0%, #4f8cff 100%) !important;
-        }
         @media (max-width: 600px) {
-            #qr-reader, #qr-reader-results {
+            #qr-reader, #qr-reader-results, #qr-reader-controls {
                 max-width: 98vw;
                 margin-left: 1vw;
                 margin-right: 1vw;
             }
-            #qr-reader {
-                aspect-ratio: 1 / 1;
+            #qr-reader-controls {
+                gap: 8px;
             }
             .html5-qrcode-button,
             #html5-qrcode-button-camera-permission,
             #html5-qrcode-button-camera-stop,
             #html5-qrcode-button-camera-start {
-                font-size: 1.1em !important;
-                padding: 14px 20px !important;
+                font-size: 0.95em !important;
+                padding: 8px 12px !important;
             }
         }
     </style>
 </head>
 <body>
     <div id="qr-reader"></div>
+    <div id="qr-reader-controls"></div>
     <div id="qr-reader-results">
         <span class="result-label">Scan a QR code to see the result here</span>
     </div>
@@ -112,12 +124,12 @@
 
         docReady(function () {
             var resultContainer = document.getElementById('qr-reader-results');
+            var controlsContainer = document.getElementById('qr-reader-controls');
             var lastResult, countResults = 0;
             function onScanSuccess(decodedText, decodedResult) {
                 if (decodedText !== lastResult) {
                     ++countResults;
                     lastResult = decodedText;
-                    console.log(`Scan result ${decodedText}`, decodedResult);
                     resultContainer.innerHTML = `
                         <span class="result-label">Scan #${countResults} Result:</span>
                         <span class="result-value">${decodedText}</span>
@@ -126,8 +138,23 @@
             }
 
             var html5QrcodeScanner = new Html5QrcodeScanner(
-                "qr-reader", { fps: 10, qrbox: 250 });
+                "qr-reader", { fps: 10, qrbox: 250 },
+                /* verbose= */ false
+            );
             html5QrcodeScanner.render(onScanSuccess);
+
+            // Move all scan control buttons outside the camera box after rendering
+            setTimeout(function() {
+                var buttons = document.querySelectorAll(
+                    ".html5-qrcode-button, " +
+                    "#html5-qrcode-button-camera-permission, " +
+                    "#html5-qrcode-button-camera-stop, " +
+                    "#html5-qrcode-button-camera-start"
+                );
+                buttons.forEach(function(btn) {
+                    controlsContainer.appendChild(btn);
+                });
+            }, 500);
         });
     </script>
 </body>
