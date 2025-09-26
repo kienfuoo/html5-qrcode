@@ -9,6 +9,57 @@
             font-family: 'Segoe UI', Arial, sans-serif;
             background: #f4f8fb;
         }
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #f4f8fb; /* fully opaque */
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #login-container {
+            width: 100%;
+            max-width: 350px;
+            padding: 32px 24px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(79,140,255,0.10);
+            text-align: center;
+        }
+        #login-container h2 {
+            margin-bottom: 24px;
+            color: #4f8cff;
+        }
+        #login-container input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #bcdcff;
+            font-size: 1em;
+        }
+        #login-container button {
+            font-size: 1em;
+            padding: 10px 24px;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #4f8cff 0%, #38c7ff 100%);
+            color: #fff;
+            border: none;
+            box-shadow: 0 2px 8px rgba(79,140,255,0.10);
+            cursor: pointer;
+            margin-top: 18px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        #login-container button:hover {
+            background: linear-gradient(90deg, #38c7ff 0%, #4f8cff 100%);
+        }
+        #login-error {
+            color: #e74c3c;
+            margin-top: 10px;
+            font-size: 0.95em;
+        }
         #qr-reader {
             width: 100%;
             max-width: 500px;
@@ -76,19 +127,26 @@
             margin-bottom: 8px;
             display: block;
         }
-        #qr-reader-results .result-value {
-            font-size: 1.2em;
+        #result-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 210px; /* About 3 items */
+            overflow-y: auto;
+        }
+        #result-list li {
+            font-size: 1.1em;
             color: #1a2a3a;
             word-break: break-all;
             background: #fff;
             border-radius: 6px;
             padding: 8px 10px;
-            margin-top: 6px;
+            margin: 8px 0;
             box-shadow: 0 1px 4px rgba(79,140,255,0.05);
-            display: inline-block;
+            display: block;
         }
         @media (max-width: 600px) {
-            #qr-reader, #qr-reader-results, #qr-reader-controls {
+            #qr-reader, #qr-reader-results, #qr-reader-controls, #login-container {
                 max-width: 98vw;
                 margin-left: 1vw;
                 margin-right: 1vw;
@@ -107,13 +165,40 @@
     </style>
 </head>
 <body>
+    <div id="login-overlay">
+        <div id="login-container">
+            <h2>Login to Unlock Scanner</h2>
+            <form id="login-form">
+                <input type="text" id="username" placeholder="Username" required><br>
+                <input type="password" id="password" placeholder="Password" required><br>
+                <button type="submit">Login</button>
+                <div id="login-error"></div>
+            </form>
+        </div>
+    </div>
     <div id="qr-reader"></div>
     <div id="qr-reader-controls"></div>
     <div id="qr-reader-results">
         <span class="result-label">Scan a QR code to see the result here</span>
+        <ul id="result-list"></ul>
     </div>
     <script src="./html5-qrcode.min.js"></script>
     <script>
+        // Simple hardcoded credentials
+        const VALID_USERNAME = "user";
+        const VALID_PASSWORD = "pass123";
+
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+                document.getElementById('login-overlay').style.display = 'none';
+            } else {
+                document.getElementById('login-error').textContent = "Invalid username or password.";
+            }
+        });
+
         function docReady(fn) {
             if (document.readyState === "complete"
                 || document.readyState === "interactive") {
@@ -128,13 +213,13 @@
             var controlsContainer = document.getElementById('qr-reader-controls');
             var lastResult, countResults = 0;
             function onScanSuccess(decodedText, decodedResult) {
-                if (decodedText !== lastResult) {
-                    ++countResults;
-                    lastResult = decodedText;
-                    resultContainer.innerHTML = `
-                        <span class="result-label">Scan #${countResults} Result:</span>
-                        <span class="result-value">${decodedText}</span>
-                    `;
+                const resultList = document.getElementById('result-list');
+                // Only prevent duplicate consecutive scans (not any previous item)
+                const lastItem = resultList.lastChild;
+                if (!lastItem || !lastItem.textContent.endsWith(decodedText)) {
+                    const li = document.createElement('li');
+                    li.textContent = `Scan #${resultList.children.length + 1}: ${decodedText}`;
+                    resultList.appendChild(li);
                 }
             }
 
